@@ -1,0 +1,179 @@
+---
+title: "What else affects choice accuracy in DDM?"
+author: Brenden Eum
+date: July 19, 2023
+output: 
+  html_document: 
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    code_folding: hide
+    df_print: default
+---
+
+
+# Preamble.
+
+```{r}
+rm(list=ls())
+library(dplyr)
+library(ggplot2)
+library(plotrix)
+
+ddmdir = "../helpers/ddm"
+custdir = "../helpers/custom"
+tempdir = "../outputs/temp"
+
+```
+
+# Import plot options and useful functions.
+
+```{r}
+source(file.path(custdir, "GainLossColorPalette.R"))
+source(file.path(custdir, "MyPlotOptions.R"))
+source(file.path(custdir, "se.R"))
+```
+
+# DDM helpers.
+
+```{r}
+source(file.path(ddmdir, "sim_trial.R"))
+```
+
+# Psychometric curve at various noise levels.
+
+3 levels of noise: 1, 3, 5. 100 simulations each.
+
+```{r}
+d = .2
+s_list = c(1,3,5)
+b = 0
+ndt = .1
+a = 1
+dt = .1
+simulations = 100
+
+set.seed(4)
+vLs = c()
+vRs = c()
+choices = c()
+rts = c()
+ss = c()
+trials = c()
+ind = 1
+for (vL in c(1:5)) {
+  for (vR in c(1:5)) {
+    for (s in s_list) {
+      for (sim in c(1:simulations)) {
+        simulated_trial = sim_trial(vL=vL, vR=vR, d=d, s=s, b=b, ndt=ndt, a=a, dt=dt, maxTime=50, warning=T)
+        vLs[ind] = vL
+        vRs[ind] = vR
+        choices[ind] = simulated_trial$choice
+        rts[ind] = simulated_trial$rt
+        ss[ind] = s
+        trials[ind] = sim
+        ind = ind + 1
+      }
+    }   
+  }
+}
+sim_noise_data = data.frame(vL=vLs, vR=vRs, choice=choices, rt=rts, s=ss, trial=trials)
+```
+
+```{r}
+sim_noise_data = na.omit(sim_noise_data)
+sim_noise_data$vDiff = sim_noise_data$vL - sim_noise_data$vR
+```
+
+```{r}
+pdata.noise <- sim_noise_data %>%
+  group_by(s, vDiff) %>%
+  summarize(
+    y = mean(choice),
+    se = std.error(choice)
+  )
+```
+
+```{r}
+plt.varyNoise <- ggplot(data=pdata.noise, aes(x=vDiff)) +
+  myPlot +
+  geom_hline(yintercept=.5, color="grey", alpha=.5) +
+  geom_vline(xintercept=0, color="grey", alpha=.5) +
+  geom_line(aes(y = y), size = linesize) +
+  geom_ribbon(aes(ymin=y-1.96*se, ymax=y+1.96*se)) +
+  labs(title="Noise", y="Pr(Choose Left)", x="Value Difference (L-R)") +
+  facet_grid(cols = vars(s))
+
+plt.varyNoise
+```
+
+# Psychometric curve at various drift levels.
+
+3 levels of drift: .01, .05, .2. 100 simulations each.
+
+```{r}
+d_list = c(.01,.05,.2)
+s = 1
+b = 0
+ndt = .1
+a = 1
+dt = .1
+simulations = 100
+
+set.seed(4)
+vLs = c()
+vRs = c()
+choices = c()
+rts = c()
+ds = c()
+trials = c()
+ind = 1
+for (vL in c(1:5)) {
+  for (vR in c(1:5)) {
+    for (d in d_list) {
+      for (sim in c(1:simulations)) {
+        simulated_trial = sim_trial(vL=vL, vR=vR, d=d, s=s, b=b, ndt=ndt, a=a, dt=dt, maxTime=50, warning=T)
+        vLs[ind] = vL
+        vRs[ind] = vR
+        choices[ind] = simulated_trial$choice
+        rts[ind] = simulated_trial$rt
+        ds[ind] = d
+        trials[ind] = sim
+        ind = ind + 1
+      }
+    }   
+  }
+}
+sim_drift_data = data.frame(vL=vLs, vR=vRs, choice=choices, rt=rts, d=ds, trial=trials)
+```
+
+```{r}
+sim_drift_data = na.omit(sim_drift_data)
+sim_drift_data$vDiff = sim_drift_data$vL - sim_drift_data$vR
+```
+
+```{r}
+pdata.drift <- sim_drift_data %>%
+  group_by(d, vDiff) %>%
+  summarize(
+    y = mean(choice),
+    se = std.error(choice)
+  )
+```
+
+```{r}
+plt.varyDrift <- ggplot(data=pdata.drift, aes(x=vDiff)) +
+  myPlot +
+  geom_hline(yintercept=.5, color="grey", alpha=.5) +
+  geom_vline(xintercept=0, color="grey", alpha=.5) +
+  geom_line(aes(y = y), size = linesize) +
+  geom_ribbon(aes(ymin=y-1.96*se, ymax=y+1.96*se)) +
+  labs(title="Drift", y="Pr(Choose Left)", x="Value Difference (L-R)") +
+  facet_grid(cols = vars(d))
+
+plt.varyDrift
+```
+
+The slope of the choice curve can still depend on changes in drift rate, holding the structure of noise constant. This is why comparing the slopes is an insufficient test of different noise structures in the Common Consequence Effect.
