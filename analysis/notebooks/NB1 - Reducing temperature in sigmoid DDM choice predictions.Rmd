@@ -103,9 +103,11 @@ plt.varyNoise <- ggplot(data=pdata.noise, aes(x=vDiff)) +
   geom_vline(xintercept=0, color="grey", alpha=.5) +
   geom_line(aes(y = y), size = linesize) +
   geom_ribbon(aes(ymin=y-1.96*se, ymax=y+1.96*se)) +
-  labs(title="Noise", y="Pr(Choose Left)", x="Value Difference (L-R)") +
+  labs(title="Noise Changes", y="Pr(Choose Left)", x="Value Difference (L-R)") +
   facet_grid(cols = vars(s))
 
+figdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-common-consequence/analysis/outputs/figures"
+ggsave(file.path(figdir, "psychometric_wrt_noise.png"), plot=plt.varyNoise)
 plt.varyNoise
 ```
 
@@ -170,9 +172,11 @@ plt.varyDrift <- ggplot(data=pdata.drift, aes(x=vDiff)) +
   geom_vline(xintercept=0, color="grey", alpha=.5) +
   geom_line(aes(y = y), size = linesize) +
   geom_ribbon(aes(ymin=y-1.96*se, ymax=y+1.96*se)) +
-  labs(title="Drift", y="Pr(Choose Left)", x="Value Difference (L-R)") +
+  labs(title="Drift Changes", y="Pr(Choose Left)", x="Value Difference (L-R)") +
   facet_grid(cols = vars(d))
 
+figdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-common-consequence/analysis/outputs/figures"
+ggsave(file.path(figdir, "psychometric_wrt_drift.png"), plot=plt.varyDrift)
 plt.varyDrift
 ```
 
