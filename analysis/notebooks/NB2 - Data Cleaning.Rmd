@@ -21,6 +21,7 @@ rm(list=ls())
 library(dplyr)
 library(ggplot2)
 library(plotrix)
+library(readr)
 
 ddmdir = "../helpers/ddm"
 custdir = "../helpers/custom"
@@ -38,7 +39,7 @@ source(file.path(custdir, "MyPlotOptions.R"))
 source(file.path(custdir, "se.R"))
 ```
 
-# Import and clean data.
+# Import and transform data.
 
 ```{r}
 rawdata = read.csv(file.path(rawdatadir, "2023.07.24-pilot.csv"))
@@ -64,10 +65,38 @@ voi = c(
 rawdata = rawdata[,voi]
 ```
 
-# Save
+# Clean data.
 
 ```{r}
-save(rawdata, file=file.path(datadir, "pilotdata.RData"))
+# Only keep RTs in the lower 95% quantile.
+rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.95))
+data = rawdata[rawdata$Reaction.Time<=rt.threshold,]
+
+# Turn lottery information into numeric.
+data$L1H = parse_number(data$L1H)
+data$L1M = parse_number(data$L1M)
+data$L1L = parse_number(data$L1L)
+data$L2H = parse_number(data$L2H)
+data$L2M = parse_number(data$L2M)
+data$L2L = parse_number(data$L2L)
+data$L1PrH = parse_number(data$L1PrH)/100
+data$L1PrM = parse_number(data$L1PrM)/100
+data$L1PrL = parse_number(data$L1PrL)/100
+data$L2PrH = parse_number(data$L2PrH)/100
+data$L2PrM = parse_number(data$L2PrM)/100
+data$L2PrL = parse_number(data$L2PrL)/100
+
+# Change other variables into numeric
+data$Trial.Number = as.numeric(data$Trial.Number)
+data$Response = as.numeric(data$Response)
+
+summary(data)
 ```
 
 
+# Save
+
+```{r}
+save(data, file=file.path(datadir, "pilotdata.RData"))
+write.csv(data, file=file.path(datadir, "pilotdata.csv"), row.names=F)
+```
