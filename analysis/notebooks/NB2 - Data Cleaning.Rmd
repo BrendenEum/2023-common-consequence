@@ -69,7 +69,7 @@ rawdata = rawdata[,voi]
 
 ```{r}
 # Only keep RTs in the lower 97% quantile.
-rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.95))
+rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.97))
 data = rawdata[rawdata$Reaction.Time<=rt.threshold,]
 
 # Turn lottery information into numeric.
@@ -89,6 +89,9 @@ data$L2PrL = parse_number(data$L2PrL)/100
 # Change other variables into numeric
 data$Trial.Number = as.numeric(data$Trial.Number)
 data$Response = as.numeric(data$Response)
+
+# Replace NA's with 0 since they are $0 with 0% probability.
+data[is.na(data)] <- 0
 
 summary(data)
 ```
