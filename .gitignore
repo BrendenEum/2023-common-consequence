@@ -20,7 +20,6 @@ nilearn_cache
 .pem
 tmp*
 *.mat
-*.csv
 mcmc_chains/
 figure-html/
 test*
