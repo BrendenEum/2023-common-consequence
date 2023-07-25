@@ -68,7 +68,7 @@ rawdata = rawdata[,voi]
 # Clean data.
 
 ```{r}
-# Only keep RTs in the lower 95% quantile.
+# Only keep RTs in the lower 97% quantile.
 rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.95))
 data = rawdata[rawdata$Reaction.Time<=rt.threshold,]
 
