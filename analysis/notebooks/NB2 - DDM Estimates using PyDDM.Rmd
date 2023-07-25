@@ -1,0 +1,73 @@
+---
+title: "DDM Estimates using PyDDM"
+author: Brenden Eum
+date: July 24, 2023
+output: 
+  html_document: 
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    code_folding: hide
+    df_print: default
+---
+
+
+# Preamble.
+
+```{r}
+rm(list=ls())
+library(dplyr)
+library(ggplot2)
+library(plotrix)
+
+ddmdir = "../helpers/ddm"
+custdir = "../helpers/custom"
+tempdir = "../outputs/temp"
+rawdatadir = "../../data/raw_data"
+datadir = "../../data/processed_data"
+
+```
+
+# Import plot options and useful functions.
+
+```{r}
+source(file.path(custdir, "GainLossColorPalette.R"))
+source(file.path(custdir, "MyPlotOptions.R"))
+source(file.path(custdir, "se.R"))
+```
+
+# Import and clean data.
+
+```{r}
+rawdata = read.csv(file.path(rawdatadir, "2023.07.24-pilot.csv"))
+rawdata = rawdata[rawdata$display=="Trial" & rawdata$Screen.Name=="Choice",]
+voi = c(
+  "Participant.Private.ID",
+  "Trial.Number",
+  "Reaction.Time",
+  "Response",
+  "L1H",
+  "L1PrH",
+  "L1M",
+  "L1PrM",
+  "L1L",
+  "L1PrL",
+  "L2H",
+  "L2PrH",
+  "L2M",
+  "L2PrM",
+  "L2L",
+  "L2PrL"
+)
+rawdata = rawdata[,voi]
+```
+
+# Save
+
+```{r}
+save(rawdata, file=file.path(datadir, "pilotdata.RData"))
+```
+
+

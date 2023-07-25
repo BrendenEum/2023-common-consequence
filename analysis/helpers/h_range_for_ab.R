@@ -44,7 +44,7 @@ for (p in p_list) {
 }
 pdata.h = data.frame(x = xs, y=ys, p=ps, r=rs)
 
-ggplot(data=pdata.h, aes(x=x, y=y)) +
+plt.h <- ggplot(data=pdata.h, aes(x=x, y=y)) +
   geom_hline(yintercept=0, color='darkgrey') +
   geom_line(linewidth=2) +
   theme_classic() +
@@ -52,5 +52,7 @@ ggplot(data=pdata.h, aes(x=x, y=y)) +
   labs(y = "Expected Value Difference", x = "Outcome 1 in Lotteries (H)") +
   facet_grid(cols = vars(p), rows=vars(r), labeller=label_both)
 
+
+
 figdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-common-consequence/analysis/outputs/figures"
-ggsave(file.path(figdir, "choosing_h_range.png"), plot=pdata.h)
+ggsave(file.path(figdir, "choosing_h_range.png"), plot=plt.h)

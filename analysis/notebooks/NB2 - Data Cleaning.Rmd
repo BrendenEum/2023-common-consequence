@@ -64,3 +64,10 @@ voi = c(
 rawdata = rawdata[,voi]
 ```
 
+# Save
+
+```{r}
+save(rawdata, file=file.path(datadir, "pilotdata.RData"))
+```
+
+
