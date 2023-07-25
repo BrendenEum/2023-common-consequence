@@ -60,7 +60,8 @@ voi = c(
   "L2M",
   "L2PrM",
   "L2L",
-  "L2PrL"
+  "L2PrL",
+  "Spreadsheet.Name"
 )
 rawdata = rawdata[,voi]
 ```
@@ -92,6 +93,15 @@ data$Response = as.numeric(data$Response)
 
 # Replace NA's with 0 since they are $0 with 0% probability.
 data[is.na(data)] <- 0
+
+# p's and r's
+data$Spreadsheet.Name = parse_number(data$Spreadsheet.Name)
+data$r = as.numeric(substr(toString(data$Spreadsheet.Name),1,1))/10
+data$p = as.numeric(substr(toString(data$Spreadsheet.Name),2,2))/10
+
+# Choice type
+data$type = "AB"
+data$type[data$Trial.Number > 20 & data$Trial.Number<=40] = "ApBp"
 
 summary(data)
 ```
