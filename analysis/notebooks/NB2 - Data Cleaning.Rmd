@@ -103,8 +103,12 @@ data[is.na(data)] <- 0
 
 # p's and r's
 data$Spreadsheet.Name = parse_number(data$Spreadsheet.Name)
-data$r = as.numeric(substr(toString(data$Spreadsheet.Name),1,1))/10
-data$p = as.numeric(substr(toString(data$Spreadsheet.Name),2,2))/10
+data$r = NA
+data$p = NA
+for (i in c(1:nrow(data))) {
+  data$r[i] = as.numeric(substr(toString(data$Spreadsheet.Name[i]),1,1))/10
+  data$p[i] = as.numeric(substr(toString(data$Spreadsheet.Name[i]),2,2))/10 
+}
 
 # Choice type
 data$type = "AB"
