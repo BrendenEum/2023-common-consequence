@@ -26,6 +26,7 @@ library(readr)
 ddmdir = "../helpers/ddm"
 custdir = "../helpers/custom"
 tempdir = "../outputs/temp"
+figdir = "../outputs/figures"
 rawdatadir = "../../data/raw_data"
 datadir = "../../data/processed_data"
 
@@ -42,7 +43,7 @@ source(file.path(custdir, "se.R"))
 # Import and transform data.
 
 ```{r}
-rawdata = read.csv(file.path(rawdatadir, "2023.07.25-pilot.csv"))
+rawdata = read.csv(file.path(rawdatadir, "2023.07.26-pilot.csv"))
 rawdata = rawdata[rawdata$display=="Trial" & rawdata$Screen.Name=="Choice",]
 voi = c(
   "Participant.Private.ID",
@@ -160,6 +161,9 @@ voi = c(
 data = data[,voi]
 
 summary(data)
+png(file.path(figdir,'histogram_of_accepted_trials.png'))
+hist(data$trial)
+dev.off()
 ```
 
 
