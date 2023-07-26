@@ -42,7 +42,7 @@ source(file.path(custdir, "se.R"))
 # Import and transform data.
 
 ```{r}
-rawdata = read.csv(file.path(rawdatadir, "2023.07.24-pilot.csv"))
+rawdata = read.csv(file.path(rawdatadir, "2023.07.25-pilot.csv"))
 rawdata = rawdata[rawdata$display=="Trial" & rawdata$Screen.Name=="Choice",]
 voi = c(
   "Participant.Private.ID",
@@ -60,7 +60,8 @@ voi = c(
   "L2M",
   "L2PrM",
   "L2L",
-  "L2PrL"
+  "L2PrL",
+  "Spreadsheet.Name"
 )
 rawdata = rawdata[,voi]
 ```
@@ -69,8 +70,14 @@ rawdata = rawdata[,voi]
 
 ```{r}
 # Only keep RTs in the lower 97% quantile.
-rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.97))
+rt.threshold = quantile(rawdata$Reaction.Time, probs=c(.95))
 data = rawdata[rawdata$Reaction.Time<=rt.threshold,]
+
+# RTs in secs
+data$Reaction.Time = data$Reaction.Time/1000
+
+# Choice in terms of left or right. (1=L, 0=R)
+data$choice_lr = data$Response
 
 # Turn lottery information into numeric.
 data$L1H = parse_number(data$L1H)
@@ -92,6 +99,65 @@ data$Response = as.numeric(data$Response)
 
 # Replace NA's with 0 since they are $0 with 0% probability.
 data[is.na(data)] <- 0
+
+# p's and r's
+data$Spreadsheet.Name = parse_number(data$Spreadsheet.Name)
+data$r = as.numeric(substr(toString(data$Spreadsheet.Name),1,1))/10
+data$p = as.numeric(substr(toString(data$Spreadsheet.Name),2,2))/10
+
+# Choice type
+data$type = "AB"
+data$type[data$Trial.Number > 20 & data$Trial.Number<=40] = "ApBp"
+
+# Left and right mapped to A B.
+data$left = "A"
+data$right = "B"
+data$right[data$L2H==0] = "A"
+data$left[data$L2H==0] = "B"
+
+# Choice in terms of AB (A=1, B=0)
+data$choice_ab = NA
+data$choice_ab[data$choice_lr==1 & data$left=="A"] = 1
+data$choice_ab[data$choice_lr==0 & data$left=="A"] = 0
+data$choice_ab[data$choice_lr==1 & data$left=="B"] = 0
+data$choice_ab[data$choice_lr==0 & data$left=="B"] = 1
+
+# Expected values of A and B
+data$vA = NA
+data$vB = NA
+data$vA[data$left=="A"] = data$L1H[data$left=="A"]*data$L1PrH[data$left=="A"] + data$L1M[data$left=="A"]*data$L1PrM[data$left=="A"] + data$L1L[data$left=="A"]*data$L1PrL[data$left=="A"]
+data$vA[data$left=="B"] = data$L2H[data$left=="B"]*data$L2PrH[data$left=="B"] + data$L2M[data$left=="B"]*data$L2PrM[data$left=="B"] + data$L2L[data$left=="B"]*data$L2PrL[data$left=="B"]
+data$vB[data$left=="A"] = data$L2H[data$left=="A"]*data$L2PrH[data$left=="A"] + data$L2M[data$left=="A"]*data$L2PrM[data$left=="A"] + data$L2L[data$left=="A"]*data$L2PrL[data$left=="A"]
+data$vB[data$left=="B"] = data$L1H[data$left=="B"]*data$L1PrH[data$left=="B"] + data$L1M[data$left=="B"]*data$L1PrM[data$left=="B"] + data$L1L[data$left=="B"]*data$L1PrL[data$left=="B"]
+
+# H's
+data$H = apply(data[,c("L1H", "L2H")], 1, max)
+
+# Expected value difference (A-B).
+data$vDiff_ab = data$vA - data$vB
+
+# Rename columns and only keep variables of interest.
+data = data %>%
+  mutate(
+    subject = Participant.Private.ID,
+    trial = Trial.Number,
+    rt = Reaction.Time
+  )
+voi = c(
+  "subject",
+  "trial",
+  "type",
+  "rt",
+  "p",
+  "r",
+  "vDiff_ab",
+  "choice_ab",
+  "vA",
+  "vB",
+  "choice_lr",
+  "H"
+)
+data = data[,voi]
 
 summary(data)
 ```
